@@ -236,6 +236,54 @@ async function displayTvDetails() {
         </div>
   `;
   document.querySelector("#show-details").appendChild(div);
+
+  const seasonButtonsContainer = document.getElementById("season-buttons");
+  tv.seasons.forEach((season) => {
+    if (season.season_number !== 0) {
+      // ignore special/unknown seasons
+      const btn = document.createElement("button");
+      btn.classList.add("season-button");
+      btn.textContent = `Season ${season.season_number}`;
+      btn.classList.add("btn", "btn-primary", "m-1");
+      btn.addEventListener("click", () => {
+        displaySeasonEpisodes(Tvid, season.season_number);
+      });
+      seasonButtonsContainer.appendChild(btn);
+    }
+  });
+}
+
+async function displaySeasonEpisodes(showId, seasonNumber) {
+  const episodesList = document.getElementById("episodes-list");
+  const seasonData = await fetchFromApi(`tv/${showId}/season/${seasonNumber}`);
+
+  seasonData.episodes.forEach((ep) => {
+    const epDiv = document.createElement("div");
+    epDiv.classList.add("card", "mb-2", "d-flex", "flex-row");
+
+    const imgSrc = ep.still_path
+      ? `https://image.tmdb.org/t/p/w500${ep.still_path}`
+      : "images/no-image.jpg";
+
+    epDiv.innerHTML = `
+      <div class="card-body">
+        <h5 class="card-title">Episode ${ep.episode_number}: ${ep.name}</h5>
+        <div id="episode-data-container">
+        <img src="${imgSrc}" alt="${
+      ep.name
+    }" style="width: 200px; object-fit: cover;">
+        <p class="card-text-episode">${
+          ep.overview || "No description available."
+        }</p>
+        </div>
+        <p>
+        <i class="fas fa-star episode-star"></i> ${ep.vote_average.toFixed(1)} / 10
+      </p>
+        <small class="text-muted">Air Date: ${ep.air_date || "N/A"}</small>
+      </div>
+    `;
+    episodesList.appendChild(epDiv);
+  });
 }
 
 async function displaySlider() {

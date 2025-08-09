@@ -1,5 +1,15 @@
 const global = {
   currentWindow: window.location.pathname,
+  queryString: window.location.search,
+  api: {
+    apiKey: "76d21f288025ab7b66bcf5a213b530c6",
+    apiUrl: "https://api.themoviedb.org/3/",
+  },
+  search: {
+    type: "",
+    term: "",
+    query: "",
+  },
 };
 //display popular movies
 function showSpinner() {
@@ -8,6 +18,71 @@ function showSpinner() {
 
 function hideSpinner() {
   document.querySelector(".spinner").classList.remove("show");
+}
+
+async function searchForMedia() {
+  const urlPath = new URLSearchParams(global.queryString);
+  global.search.type = urlPath.get("type");
+  global.search.term = urlPath.get("search-term");
+  if (global.search.term !== "" && global.search.term !== null) {
+    if (global.search.type === "movie") {
+      const { results } = await SearchFromApi();
+      results.forEach((result) => {
+        const div = document.createElement("div");
+        div.classList.add("card");
+        div.innerHTML = `
+        <a href="/movie-details.html?${result.id}">
+          ${
+            result.poster_path
+              ? `<img src="https://image.tmdb.org/t/p/w500${result.poster_path}" class="card-img-top" alt="${result.title}" />`
+              : `https://image.tmdb.org/t/p/w500${show.poster_path}`
+          }
+        </a>
+        <div class="card-body">
+          <h5 class="card-title">${result.title}</h5>
+          <p class="card-text">
+            <small class="text-muted">Release: ${result.release_date}</small>
+          </p>
+        </div>
+    `;
+        document.querySelector("#search-results").appendChild(div);
+      });
+    } else {
+      const { results } = await SearchFromApi();
+      results.forEach((result) => {
+        const div = document.createElement("div");
+        div.classList.add("card");
+        div.innerHTML = `
+        <a href="/tv-details.html?${result.id}">
+          ${
+            result.poster_path
+              ? `<img src="https://image.tmdb.org/t/p/w500${result.poster_path}" class="card-img-top" alt="${result.title}" />`
+              : `https://image.tmdb.org/t/p/w500${show.poster_path}`
+          }
+        </a>
+        <div class="card-body">
+          <h5 class="card-title">${result.name}</h5>
+          <p class="card-text">
+            <small class="text-muted">Release: ${result.first_air_date}</small>
+          </p>
+        </div>
+    `;
+        document.querySelector("#search-results").appendChild(div);
+      });
+    }
+  } else {
+    getAlert("Please type a valid name!");
+  }
+}
+
+function getAlert(message) {
+  const div = document.createElement("div");
+  div.classList.add("alert");
+  div.innerText = message;
+  document.querySelector("#alert").appendChild(div);
+  setTimeout(() => {
+    document.querySelector("#alert").removeChild(div);
+  }, 3000);
 }
 
 async function displayPopularTV() {
@@ -45,9 +120,7 @@ async function displayPopularTV() {
 }
 
 async function displayPopularMovies() {
-  showSpinner();
   const { results } = await fetchFromApi("movie/popular");
-  hideSpinner();
   results.forEach((movie) => {
     const div = document.createElement("div");
     div.classList.add("card");
@@ -242,12 +315,24 @@ async function displayTvDetails() {
     if (season.season_number !== 0) {
       // ignore special/unknown seasons
       const btn = document.createElement("button");
-      btn.classList.add("season-button");
       btn.textContent = `Season ${season.season_number}`;
-      btn.classList.add("btn", "btn-primary", "m-1");
+      btn.classList.add("btn", "btn-primary", "m-1", "season-button");
+
       btn.addEventListener("click", () => {
+        // 1. Remove active class from all buttons
+        document
+          .querySelectorAll("#season-buttons .season-button")
+          .forEach((b) => {
+            b.classList.remove("season-button-active");
+          });
+
+        // 2. Add active class to this button
+        btn.classList.add("season-button-active");
+
+        // 3. Load episodes
         displaySeasonEpisodes(Tvid, season.season_number);
       });
+
       seasonButtonsContainer.appendChild(btn);
     }
   });
@@ -255,7 +340,11 @@ async function displayTvDetails() {
 
 async function displaySeasonEpisodes(showId, seasonNumber) {
   const episodesList = document.getElementById("episodes-list");
+  episodesList.innerHTML = `<p>Loading episodes...</p>`;
+
   const seasonData = await fetchFromApi(`tv/${showId}/season/${seasonNumber}`);
+
+  episodesList.innerHTML = ""; // clear loading text
 
   seasonData.episodes.forEach((ep) => {
     const epDiv = document.createElement("div");
@@ -277,7 +366,9 @@ async function displaySeasonEpisodes(showId, seasonNumber) {
         }</p>
         </div>
         <p>
-        <i class="fas fa-star episode-star"></i> ${ep.vote_average.toFixed(1)} / 10
+        <i class="fas fa-star episode-star"></i> ${ep.vote_average.toFixed(
+          1
+        )} / 10
       </p>
         <small class="text-muted">Air Date: ${ep.air_date || "N/A"}</small>
       </div>
@@ -354,14 +445,29 @@ function displayBackgroundImage(type, image) {
   }
 }
 
+//search api
+async function SearchFromApi() {
+  const API_KEY = global.api.apiKey;
+  const API_URL = global.api.apiUrl;
+  showSpinner();
+  const response = await fetch(
+    `${API_URL}search/${global.search.type}?api_key=${API_KEY}&language=en-US&query=${global.search.term}`
+  );
+  const data = await response.json();
+  hideSpinner();
+  return data;
+}
+
 //fetch from the moviedb api
 async function fetchFromApi(endpoint) {
-  const API_KEY = "76d21f288025ab7b66bcf5a213b530c6";
-  const API_URL = "https://api.themoviedb.org/3/";
+  const API_KEY = global.api.apiKey;
+  const API_URL = global.api.apiUrl;
+  showSpinner();
   const response = await fetch(
     `${API_URL}${endpoint}?api_key=${API_KEY}&language=en-US`
   );
   const data = await response.json();
+  hideSpinner();
   return data;
 }
 
@@ -388,7 +494,7 @@ function init() {
       displayMovieDetails();
       break;
     case "/search.html":
-      console.log("Search");
+      searchForMedia();
       break;
     case "/shows.html":
       displayPopularTV();

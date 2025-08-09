@@ -350,9 +350,9 @@ section h2 {
   font-size: large;
   align-self: center;
 }
-.season-button button.active {
-  background-color: #ff9800;
-  border-color: #ff9800;
+.season-button-active {
+  background-color: #f1c40f;
+  font-weight: bold;
   color: white;
 }
 #episode-data-container {

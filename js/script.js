@@ -129,17 +129,23 @@ async function displayMovieDetails() {
         </div>
         <div class="details-bottom">
           <h2>Movie Info</h2>
-          <ul>
-            <li><span class="text-secondary">Budget:</span> ${
-              movie.budget === 0
-                ? `Movie budget not available`
-                : `$ ${formatNumberWithCommas(movie.budget)}`
-            }</li>
-            <li><span class="text-secondary">Revenue:</span> ${
-              movie.revenue === 0
-                ? `Movie Revenue not available`
-                : `$ ${formatNumberWithCommas(movie.revenue)}`
-            }</li>
+          <ul>${
+            movie.budget === 0
+              ? ``
+              : `<li><span class="text-secondary">Budget:</span> ${formatNumberWithCommas(
+                  movie.budget
+                )}
+            </li>`
+          }
+            
+          ${
+            movie.revenue === 0
+              ? ``
+              : `<li><span class="text-secondary">Revenue:</span> ${formatNumberWithCommas(
+                  movie.revenue
+                )}
+          </li>`
+          }
             <li><span class="text-secondary">Runtime:</span> ${
               movie.runtime
             } minutes</li>

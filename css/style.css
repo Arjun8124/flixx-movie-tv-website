@@ -365,3 +365,7 @@ section h2 {
   color: yellow;
   font-size: small;
 }
+#search-results-heading {
+  font-size: large;
+  font-weight: bold;
+}

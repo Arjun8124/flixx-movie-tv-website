@@ -224,6 +224,17 @@ async function displayMovieDetails() {
   }
   const movie = await fetchFromApi(`movie/${movieId}`);
   displayBackgroundImage("movie", movie.backdrop_path);
+  let movieYear = movie.release_date.split("-")[0];
+
+  let titleArr = movie.title
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, "") // remove anything that's not a letter, digit, or space
+    .split(" ");
+
+  titleArr.push(movieYear);
+
+  const title = titleArr.join("-");
+  console.log(title);
   const div = document.createElement("div");
   div.innerHTML = `        <div class="details-top">
           <div>
@@ -264,6 +275,7 @@ async function displayMovieDetails() {
             <a href="${
               movie.homepage
             }" target="_blank" class="btn">Visit Movie Homepage</a>
+            <a href="https://yts.mx/movies/${title}" target="_blank" class="btn">Yts Link</a>
           </div>
         </div>
         <div class="details-bottom">

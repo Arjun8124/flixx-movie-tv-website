@@ -234,8 +234,8 @@ async function displayMovieDetails() {
   // titleArr.push(movieYear);
   //<a href="https://yts.mx/movies/${title}" target="_blank" class="btn">Yts Link</a>
 
-  const title = titleArr.join("-");
-  console.log(title);
+  // const title = titleArr.join("-");
+  // console.log(title);
   const div = document.createElement("div");
   div.innerHTML = `        <div class="details-top">
           <div>
